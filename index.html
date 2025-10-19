@@ -54,17 +54,21 @@
             z-index: 100;
             opacity: 0;
             animation: fadeIn 3s forwards 1s;
+            padding: 0 20px;
+            max-width: 90%;
         }
 
         .message h1 {
-            font-size: 3em;
+            font-size: clamp(1.5rem, 8vw, 3em);
             text-shadow: 0 0 20px rgba(255, 182, 193, 0.8);
             margin-bottom: 20px;
+            white-space: nowrap;
         }
 
         .message p {
-            font-size: 1.5em;
+            font-size: clamp(0.9rem, 4vw, 1.5em);
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            line-height: 1.4;
         }
 
         @keyframes fadeIn {
@@ -172,6 +176,15 @@
             font-size: 14px;
             text-align: center;
             z-index: 100;
+            padding: 0 20px;
+            max-width: 90%;
+        }
+
+        @media (max-width: 480px) {
+            .info {
+                font-size: 12px;
+                bottom: 10px;
+            }
         }
     </style>
 </head>
@@ -180,14 +193,13 @@
     <canvas id="canvas"></canvas>
     
     <div class="message">
-        <h1>Happy women's day</h1>
+        <h1>Happy Women's Day</h1>
         <p>Click vào màn hình để tạo hoa ✨</p>
     </div>
 
     <div class="info">Click vào màn hình để tạo những bông hoa lung linh 🌸</div>
 
     <script>
-        // Tạo bầu trời sao
         const starsContainer = document.getElementById('stars');
         for (let i = 0; i < 200; i++) {
             const star = document.createElement('div');
@@ -199,7 +211,6 @@
             starsContainer.appendChild(star);
         }
 
-        // Canvas cho hiệu ứng ánh sáng
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -252,7 +263,6 @@
 
         animate();
 
-        // Tạo hoa
         function createFlower(x, y) {
             const flower = document.createElement('div');
             flower.className = 'flower';
@@ -291,12 +301,10 @@
 
             document.body.appendChild(flower);
 
-            // Tạo particles
             for (let i = 0; i < 20; i++) {
                 particles.push(new Particle(x, y));
             }
 
-            // Tạo hiệu ứng petal particles
             for (let i = 0; i < 10; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
@@ -313,7 +321,6 @@
                 setTimeout(() => particle.remove(), 4000);
             }
 
-            // Xóa hoa sau 10 giây
             setTimeout(() => {
                 flower.style.transition = 'opacity 2s';
                 flower.style.opacity = '0';
@@ -321,12 +328,10 @@
             }, 10000);
         }
 
-        // Xử lý click
         document.addEventListener('click', (e) => {
             createFlower(e.clientX, e.clientY);
         });
 
-        // Tạo một số hoa ban đầu
         setTimeout(() => {
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
@@ -337,7 +342,6 @@
             }
         }, 2000);
 
-        // Resize canvas
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
