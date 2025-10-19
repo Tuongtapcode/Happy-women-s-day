@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoa Nở Trong Đêm Huyền Diệu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: linear-gradient(to bottom, #0a0e27, #1a1a3e, #0d0221);
+            height: 100vh;
+            position: relative;
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-family: 'Georgia', serif;
+            z-index: 100;
+            opacity: 0;
+            animation: fadeIn 3s forwards 1s;
+        }
+
+        .message h1 {
+            font-size: 3em;
+            text-shadow: 0 0 20px rgba(255, 182, 193, 0.8);
+            margin-bottom: 20px;
+        }
+
+        .message p {
+            font-size: 1.5em;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .flower {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .flower:hover {
+            transform: scale(1.2);
+        }
+
+        .petal {
+            position: absolute;
+            width: 40px;
+            height: 80px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform-origin: center bottom;
+        }
+
+        .center {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #FFD700, #FFA500);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        .stem {
+            position: absolute;
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(to bottom, #2d5016, #4a7c2f);
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 30px;
+            height: 15px;
+            background: #2d5016;
+            border-radius: 0 50% 50% 50%;
+            bottom: -50px;
+        }
+
+        .leaf.left {
+            left: -15px;
+            transform: rotate(-30deg);
+        }
+
+        .leaf.right {
+            right: -15px;
+            transform: rotate(30deg);
+        }
+
+        @keyframes bloom {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(360deg);
+                opacity: 1;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: float 4s ease-out forwards;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <canvas id="canvas"></canvas>
+    
+    <div class="message">
+        <h1>Happy women's day</h1>
+        <p>Click vào màn hình để tạo hoa ✨</p>
+    </div>
+
+    <div class="info">Click vào màn hình để tạo những bông hoa lung linh 🌸</div>
+
+    <script>
+        // Tạo bầu trời sao
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = star.style.height = Math.random() * 3 + 'px';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // Canvas cho hiệu ứng ánh sáng
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `hsl(${Math.random() * 60 + 300}, 100%, 70%)`;
+                this.life = 100;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= 1;
+                this.size *= 0.98;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life / 100;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Tạo hoa
+        function createFlower(x, y) {
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            flower.style.left = x + 'px';
+            flower.style.top = y + 'px';
+            flower.style.animation = 'bloom 1.5s ease-out forwards';
+
+            const colors = ['#FF69B4', '#FF1493', '#FFB6C1', '#FFC0CB', '#FF6EC7', '#FF00FF', '#DA70D6'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            const petalCount = 8;
+            for (let i = 0; i < petalCount; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.background = `radial-gradient(ellipse at center, ${color}, ${color}DD)`;
+                petal.style.transform = `rotate(${i * (360 / petalCount)}deg) translateY(-25px)`;
+                petal.style.boxShadow = `0 0 20px ${color}`;
+                flower.appendChild(petal);
+            }
+
+            const center = document.createElement('div');
+            center.className = 'center';
+            flower.appendChild(center);
+
+            const stem = document.createElement('div');
+            stem.className = 'stem';
+            flower.appendChild(stem);
+
+            const leafLeft = document.createElement('div');
+            leafLeft.className = 'leaf left';
+            flower.appendChild(leafLeft);
+
+            const leafRight = document.createElement('div');
+            leafRight.className = 'leaf right';
+            flower.appendChild(leafRight);
+
+            document.body.appendChild(flower);
+
+            // Tạo particles
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(x, y));
+            }
+
+            // Tạo hiệu ứng petal particles
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = '10px';
+                particle.style.height = '10px';
+                particle.style.background = color;
+                particle.style.borderRadius = '50%';
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                document.body.appendChild(particle);
+
+                setTimeout(() => particle.remove(), 4000);
+            }
+
+            // Xóa hoa sau 10 giây
+            setTimeout(() => {
+                flower.style.transition = 'opacity 2s';
+                flower.style.opacity = '0';
+                setTimeout(() => flower.remove(), 2000);
+            }, 10000);
+        }
+
+        // Xử lý click
+        document.addEventListener('click', (e) => {
+            createFlower(e.clientX, e.clientY);
+        });
+
+        // Tạo một số hoa ban đầu
+        setTimeout(() => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.8 + window.innerHeight * 0.1;
+                    createFlower(x, y);
+                }, i * 500);
+            }
+        }, 2000);
+
+        // Resize canvas
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
